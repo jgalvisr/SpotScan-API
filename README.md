@@ -1,0 +1,1 @@
+# SpotScan API
