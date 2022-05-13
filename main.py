@@ -1,18 +1,24 @@
 from fastapi import FastAPI
-import pandas as pd
 from DataModel import DataModel
 from PredictionModel import Model
+import requests
 
 app = FastAPI()
 
 @app.get("/")
 def default():
-    return "Bienvenido al API de SpotScan!\nEnvía una petición POSTa /predict con la URL de la imagen a analizar en el cuerpo."
+    return "Bienvenido al API de SpotScan!\nEnvía una petición POST a /predict con la URL de la imagen a analizar en el cuerpo."
 
 @app.post("/predict")
-def make_predictions(data_model: DataModel):
-    # df = pd.DataFrame(data_model.dict(), columns=data_model.dict().keys(), index=[0])
+async def make_predictions(data_model: DataModel):
     model = Model()
-    result = model.make_predictions(data_model)
-    return "El paciente tiene un " + str(result) + "% de probabilidad de tener un melanoma"
 
+    raw_img = requests.get(data_model.image)
+    file = open("data/image.jpg", "wb")
+    file.write(raw_img.content)
+    file.close()
+
+    result = model.make_predictions("image.jpg")
+    return {
+        "probability": str(result[0][0])
+    }
